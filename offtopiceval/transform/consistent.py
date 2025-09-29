@@ -7,7 +7,7 @@ from tqdm import tqdm
 import random
 
 # ========== 配置 ==========
-DATA_DIR = "/home/ubuntu/leijingdi/safetybench/transform/data_en"
+DATA_DIR = "/home/ubuntu/leijingdi/data_en"
 OUTPUT_FILE_ALL = "question_alignment.json"
 OUTPUT_FILE_MISMATCH = "mismatch.json"
 OUTPUT_FILE_STATS = "file_stats.json"
@@ -72,8 +72,8 @@ mismatches = []
 
 tasks = []
 with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
-    # for path in os.listdir(DATA_DIR):
-    for path in ['bankhelper.json']:
+    for path in os.listdir(DATA_DIR):
+    # for path in ['bankhelper.json']:
         if not path.endswith(".json"):
             continue
 
@@ -90,7 +90,7 @@ with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
             tasks.append(executor.submit(process_item, path, i, origin, question))
 
 
-    for future in as_completed(tasks):
+    for future in tqdm(as_completed(tasks), total=len(tasks), desc="Evaluating"):
         record = future.result()
         results.append(record)
         if not record["same_question"]:
