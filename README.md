@@ -59,7 +59,6 @@ We introduce **OffTopicEval**, a multilingual benchmark for evaluating **operati
 * **Languages:** English, Chinese, Hindi.
 
 <p align="center"><img src="resources/overview.png" style="width: 85%;"></p>  
-*(插入 Figure 1: Operational safety region & example failures)*
 
 ---
 
@@ -77,7 +76,7 @@ Data includes:
 * **Multilingual:** Translations from Global-MMLU (Zh, Hi).
 
 <p align="center"><img src="resources/tsne.png" style="width: 85%;"></p>  
-*(插入 Figure 2: t-SNE visualization of ID vs OOD vs Adaptive OOD)*
+
 
 ---
 
@@ -92,20 +91,8 @@ Data includes:
   * **RR<sub>OOD</sub><sup>A</sup>**: Refusal Rate on adaptive OOD.
   * **OS**: Harmonic mean of AR<sub>ID</sub> and RR<sub>OOD</sub>.
 
----
 
-## Mitigation
 
-We explore **prompt-based steering** methods:
-
-* **Q-ground**: rewrite user query into minimal form.
-* **P-ground**: remind model to prioritize system prompt.
-
-Results:
-
-* **Q-ground**: +16.65% OS (Phi-4), +18.10% (Qwen-3-30B).
-* **P-ground**: up to +41% OS (Llama-3.3-70B), +26.76% (Qwen-3-30B).
-* **Activation steering**: limited gains, model- and layer-specific.
 
 
 
