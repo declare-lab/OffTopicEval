@@ -96,7 +96,7 @@ def list_domains(folder_path):
     results = []
     for fname in md_files:
         with open(os.path.join(folder_path, fname), "r", encoding="utf-8") as f:
-            results.append((fname, f.read().strip()))
+            results.append((fname.replace(".md",""), f.read().strip()))
     return results
 
 
@@ -136,69 +136,49 @@ def main():
     with open(args.questions, "r", encoding="utf-8") as f:
         all_data = json.load(f)
 
-    all_data = random.sample(all_data, 200)
-
     # Pick the domain file
-    domain_file = os.path.basename(args.questions).replace(".json", ".md")
-    domain_name, domain_content = select_domain(
-        args.domain_dir, args.prompt_level, domain_file
-    )
-    os.makedirs(f"{args.output_dir}/{args.model.split('/')[-1]}", exist_ok=True)
+    for (domain_name, domain_content) in list_domains(args.domain_dir):
+        domain_content = extract_part_system_prompt(domain_content, level=args.prompt_level)
+        os.makedirs(f"{args.output_dir}/{args.model.split('/')[-1]}", exist_ok=True)
 
-    output_path = os.path.join(args.output_dir, args.model.split("/")[-1], f"{domain_name}.jsonl")
-    print(f"Output Path: {output_path}")
-    mode = "a" if os.path.exists(output_path) else "w"
-    writer = DeamonWriter(output_path, mode=mode)
+        output_path = os.path.join(args.output_dir, args.model.split("/")[-1], f"{domain_name}.jsonl")
+        print(f"Output Path: {output_path}")
+        mode = "a" if os.path.exists(output_path) else "w"
+        writer = DeamonWriter(output_path, mode=mode)
 
-    kwargs = {
-        "client": client,
-        "model": args.model,
-        "domain_name": domain_name,
-        "domain": domain_content,
-        "lang": args.lang,
-    }
+        kwargs = {
+            "client": client,
+            "model": args.model,
+            "domain_name": domain_name,
+            "domain": domain_content,
+            "lang": args.lang,
+        }
 
-    result_ls = []
-    with ThreadPoolExecutor(max_workers=args.max_workers) as executor:
-        futures = [executor.submit(worker, data, **kwargs) for data in all_data]
-        for future in tqdm(
-            as_completed(futures),
-            total=len(futures),
-            leave=False,
-            desc=domain_name,
-        ):
-            try:
-                r = future.result()
-                if r:
-                    result_ls.append(r)
-                    writer.put(r)
+        result_ls = []
+        with ThreadPoolExecutor(max_workers=args.max_workers) as executor:
+            all_data = [d for d in all_data if d.get("in_domain").replace(".md","") == domain_name]
+            futures = [executor.submit(worker, data, **kwargs) for data in all_data]
+            for future in tqdm(as_completed(futures), total=len(futures), leave=False, desc=domain_name):
+                try:
+                    r = future.result()
+                    if r:
+                        result_ls.append(r)
+                        writer.put(r)
 
-            except Exception as e:
-                logging.warning(
-                    f"[{domain_name}] Worker failed with exception: {e}"
-                )
+                except Exception as e:
+                    logging.warning(f"[{domain_name}] Worker failed with exception: {e}")
 
-    # Compute metrics at the end
-    writer.graceful_terminate()
+        # Compute metrics at the end
+        writer.graceful_terminate()
 
-    refusal_rate = cal_metric([item["eval_result"] for item in result_ls])
-    original_refusal_rate = cal_metric(
-        [item.get("direct_eval_result") for item in result_ls]
-    )
-    print(
-        f"[{domain_name}] Saved: {output_path} | Refusal Rate: {refusal_rate:.4f}"
-    )
-    print(
-        f"[{domain_name}] Original Refusal Rate: {original_refusal_rate:.4f}"
-    )
+        refusal_rate = cal_metric([item["eval_result"] for item in result_ls])
+        original_refusal_rate = cal_metric([item.get("direct_eval_result") for item in result_ls])
+        print(f"[{domain_name}] Saved: {output_path} | Refusal Rate: {refusal_rate:.4f}")
+        print(f"[{domain_name}] Original Refusal Rate: {original_refusal_rate:.4f}")
 
-    os.makedirs(f"{args.output_dir}/{args.model.split('/')[-1]}", exist_ok=True)
-    with open(
-        os.path.join(args.output_dir, args.model.split("/")[-1], "summary.txt"), "a", encoding="utf-8"
-    ) as f:
-        f.write(
-            f"{domain_name}\t{refusal_rate:.4f}\t{original_refusal_rate:.4f}\n"
-        )
+        os.makedirs(f"{args.output_dir}/{args.model.split('/')[-1]}", exist_ok=True)
+        with open(os.path.join(args.output_dir, args.model.split("/")[-1], "summary.txt"), "a", encoding="utf-8") as f:
+            f.write(f"{domain_name}\t{refusal_rate:.4f}\t{original_refusal_rate:.4f}\n")
 
 if __name__ == "__main__":
     logging.basicConfig(filename="eval.log",level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")

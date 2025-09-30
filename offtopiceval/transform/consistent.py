@@ -7,7 +7,7 @@ from tqdm import tqdm
 import random
 
 # ========== 配置 ==========
-DATA_DIR = "/home/ubuntu/leijingdi/data_en"
+DATA_DIR = "data_en"
 OUTPUT_FILE_ALL = "question_alignment.json"
 OUTPUT_FILE_MISMATCH = "mismatch.json"
 OUTPUT_FILE_STATS = "file_stats.json"
@@ -73,15 +73,14 @@ mismatches = []
 tasks = []
 with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
     for path in os.listdir(DATA_DIR):
-    # for path in ['bankhelper.json']:
+
         if not path.endswith(".json"):
             continue
 
         json_path = os.path.join(DATA_DIR, path)
         with open(json_path, "r", encoding="utf-8") as f:
             dataset = json.load(f)
-        # dataset = random.sample(dataset, 800)  # 打乱顺序
-        # dataset = dataset[:100]  # 仅测试前 100 条，实际可删掉
+
 
         for i, item in enumerate(dataset, 1):
             origin = item["origin_question"]

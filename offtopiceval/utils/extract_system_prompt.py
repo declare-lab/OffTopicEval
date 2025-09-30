@@ -15,7 +15,7 @@ def extract_part_system_prompt(prompt_text, level=None):
     }
 
 
-    hashes_pattern = r"(?:#|##)"  # 匹配一个或两个井号
+    hashes_pattern = r"(?:#|##)"  
     pattern = re.compile(rf"(?m)^[ \t]*{hashes_pattern}\s+.+$")
 
     matches = list(pattern.finditer(prompt_text))

@@ -2,80 +2,6 @@ import json
 import os
 from utils.is_refusal import is_refusal
 
-def recal_metric(base_dir):
-    for model_dir in os.listdir(base_dir):
-        if model_dir in {"ID"}:
-            continue
-    
-        ood_data_path = os.path.join(base_dir, model_dir)
-        id_data_path = os.path.join(base_dir, "ID", model_dir)
-
-        ood_sum_path = os.path.join(ood_data_path, "summary.txt")
-        id_sum_path = os.path.join(id_data_path, "summary.txt")
-
-        for jsonl_file in os.listdir(ood_data_path):
-            if not jsonl_file.endswith(".jsonl"):
-                continue
-            if jsonl_file == "summary.txt":
-                continue
-            jsonl_path = os.path.join(ood_data_path, jsonl_file)
-            with open(jsonl_path, "r", encoding="utf-8") as f:
-                lines = f.readlines()
-            total_res = 0
-            total_direct_res = 0
-            refusal_count_attack = 0
-            refusal_count_ood = 0
-            na_response_count = 0
-            na_direct_response_count = 0
-            for line in lines:
-                
-                obj = json.loads(line)
-                if is_refusal(obj.get("response")) is True:
-                    refusal_count_attack += 1
-                    total_res += 1
-                elif is_refusal(obj.get("response")) == "NA":
-                    na_response_count += 1
-                else:
-                    total_res += 1
-
-                if is_refusal(obj.get("direct_response")) is True:
-                    refusal_count_ood += 1
-                    total_direct_res += 1
-                elif is_refusal(obj.get("direct_response")) == "NA":
-                    na_direct_response_count += 1
-                else:
-                    total_direct_res += 1
-            # print(f"Model: {model_dir}, File: {jsonl_file}, Total Attack: {total_res}, Refusal Attack: {refusal_count_attack}, NA Attack: {na_response_count}")
-                    
-            refusal_rate_attack = refusal_count_attack / total_res if total_res > 0 else 0.0
-            refusal_rate_ood = refusal_count_ood / total_direct_res if total_direct_res > 0 else 0.0
-            with open (ood_sum_path, "a", encoding="utf-8") as f:
-                f.write(f"{jsonl_file}\t{refusal_rate_attack:.4f}\t{refusal_rate_ood:.4f}\n")
-            
-        for jsonl_file in os.listdir(id_data_path):
-            if not jsonl_file.endswith(".jsonl"):
-                continue
-            if jsonl_file == "summary.txt":
-                continue
-            jsonl_path = os.path.join(id_data_path, jsonl_file)
-            with open(jsonl_path, "r", encoding="utf-8") as f:
-                lines = f.readlines()
-            total = 0
-            refusal_count = 0
-            na_count = 0
-            for line in lines:
-                obj = json.loads(line)
-                if is_refusal(obj.get("response")) is True:
-                    refusal_count += 1
-                    total += 1
-                elif is_refusal(obj.get("response")) == "NA":
-                    na_count += 1
-                else:
-                    total += 1
-            # print(f"Model: {model_dir}, File: {jsonl_file}, Total: {total}, Refusal: {refusal_count}, NA: {na_count}")
-            refusal_rate = refusal_count / total if total > 0 else 0.0
-            with open (id_sum_path, "a", encoding="utf-8") as f:
-                f.write(f"{jsonl_file}\t{refusal_rate:.4f}\n")
 
 def main(base_dir):
     for model_dir in os.listdir(base_dir):
@@ -170,9 +96,8 @@ def main(base_dir):
 
 if __name__ == "__main__":
     base_dirs = [
-       "offtopiceval/results",
+       "results",
     ]
     for base_dir in base_dirs:
         print(f"Results for base directory: {base_dir}")
         main(base_dir)
-        # recal_metric(base_dir)

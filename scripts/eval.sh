@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-cd OffTopicEval/offtopiceval/eval
+cd OffTopicEval
 
 MODEL_LIST=(
     "RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic"
@@ -33,12 +33,12 @@ run_eval() {
     local lang=$1
     local model_name=$2
 
-    for fname in /home/ubuntu/leijingdi/safetybench/transform/data_${lang}/*; do
-        python eval_solution.py \
+    for fname in data/out_of_domain/data_${lang}/*; do
+        python offtopiceval/eval/eval_ood.py \
             --model $model_name \
             --questions $fname \
-            --domain_dir "/home/ubuntu/leijingdi/safetybench/select_ood/new_prompts" \
-            --output_dir "/home/ubuntu/leijingdi/offtopicbench_results/results_solution_${lang}" \
+            --domain_dir "offtopiceval/chatbot_sys_prompt" \
+            --output_dir "results/results_solution_${lang}" \
             --max_workers 1024 \
             --prompt_level 8 \
             --lang $lang \
@@ -49,13 +49,11 @@ run_eval_id() {
     local lang=$1
     local model_name=$2
 
-
-    OUTPUT_DIR="/home/ubuntu/leijingdi/offtopicbench_results/results_solution_${lang}/ID"
-    python eval_id.py \
+    python offtopiceval/eval/eval_id.py \
         --model $model_name \
-        --questions "/home/ubuntu/leijingdi/safetybench/multilingual_data/in_domain_${lang}.json" \
-        --domain_dir "/home/ubuntu/leijingdi/safetybench/select_ood/new_prompts" \
-        --output_dir $OUTPUT_DIR \
+        --questions "data/in_domain/in_domain_${lang}.json" \
+        --domain_dir "offtopiceval/chatbot_sys_prompt" \
+        --output_dir "results/results_solution_${lang}/ID" \
         --max_workers 1024 \
         --prompt_level 8 \
         --lang $lang \

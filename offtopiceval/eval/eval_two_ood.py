@@ -86,15 +86,15 @@ def _single_turn(system_prompt, q, client, model):
     res = llm_call(messages, model, client)
     return res, is_refusal(res)
 
-# ========= Twice-OOD main runner (ood1 取 1 条，ood2 全量) =========
+# ========= Twice-OOD main runner (uses 1 item from ood1, all items from ood2) =========
 def run_twice_ood(ood1_item, ood2_items, domain_name, system_prompt, client, model, output_dir, max_workers=128):
     """
-    评测四种模式：
-      A: {(OOD1-attack, response), (OOD2, response)}         # 两轮
-      B: {(OOD1-attack, response), (OOD2-attack, response)}  # 两轮
-      C: {(OOD2, response)}                                  # 单轮
-      D: {(OOD2-attack, response)}                           # 单轮
-    ood1_item 只用一条样本；ood2_items 全量。
+    Evaluates four modes:
+      A: {(OOD1-attack, response), (OOD2, response)}       # Two turns
+      B: {(OOD1-attack, response), (OOD2-attack, response)} # Two turns
+      C: {(OOD2, response)}                                 # Single turn
+      D: {(OOD2-attack, response)}                          # Single turn
+    Only one sample is used from ood1_item; all samples are used from ood2_items.
     """
     model_name = model.split("/")[-1]
     out_dir = os.path.join(output_dir, model_name)
@@ -110,12 +110,12 @@ def run_twice_ood(ood1_item, ood2_items, domain_name, system_prompt, client, mod
     B_results_step1, B_results_step2 = [], []
     C_results, D_results = [], []
 
-    o1 = ood1_item  # 固定
+    o1 = ood1_item  # fixed
     o1_q_attack = o1["question"]
 
     def task_A(o2):
-        q1 = o1_q_attack                 # OOD1-attack
-        q2 = o2["origin_question"]       # OOD2
+        q1 = o1_q_attack             # OOD1-attack
+        q2 = o2["origin_question"]   # OOD2
         res1, eval1, res2, eval2 = _two_turn_dialog(system_prompt, q1, q2, client, model)
         item = {
             "mode": "comboA",
@@ -134,8 +134,8 @@ def run_twice_ood(ood1_item, ood2_items, domain_name, system_prompt, client, mod
         return item, eval1, eval2
 
     def task_B(o2):
-        q1 = o1_q_attack                 # OOD1-attack
-        q2 = o2["question"]              # OOD2-attack
+        q1 = o1_q_attack             # OOD1-attack
+        q2 = o2["question"]          # OOD2-attack
         res1, eval1, res2, eval2 = _two_turn_dialog(system_prompt, q1, q2, client, model)
         item = {
             "mode": "comboB",
@@ -154,7 +154,7 @@ def run_twice_ood(ood1_item, ood2_items, domain_name, system_prompt, client, mod
         return item, eval1, eval2
 
     def task_C(o2):
-        q = o2["origin_question"]        # OOD2
+        q = o2["origin_question"]    # OOD2
         res, ev = _single_turn(system_prompt, q, client, model)
         item = {
             "mode": "single_OOD2",
@@ -169,7 +169,7 @@ def run_twice_ood(ood1_item, ood2_items, domain_name, system_prompt, client, mod
         return item, ev
 
     def task_D(o2):
-        q = o2["question"]               # OOD2-attack
+        q = o2["question"]           # OOD2-attack
         res, ev = _single_turn(system_prompt, q, client, model)
         item = {
             "mode": "single_OOD2_attack",
@@ -216,12 +216,12 @@ def run_twice_ood(ood1_item, ood2_items, domain_name, system_prompt, client, mod
             D_results.append(ev)
 
     # --- Metrics ---
-    A_rate_step1 = cal_metric(A_results_step1)  # OOD1-attack拒答率
-    A_rate_step2 = cal_metric(A_results_step2)  # OOD2拒答率
-    B_rate_step1 = cal_metric(B_results_step1)  # OOD1-attack拒答率
-    B_rate_step2 = cal_metric(B_results_step2)  # OOD2-attack拒答率
-    C_rate = cal_metric(C_results)              # OOD2拒答率
-    D_rate = cal_metric(D_results)              # OOD2-attack拒答率
+    A_rate_step1 = cal_metric(A_results_step1)  # OOD1-attack refusal rate
+    A_rate_step2 = cal_metric(A_results_step2)  # OOD2 refusal rate
+    B_rate_step1 = cal_metric(B_results_step1)  # OOD1-attack refusal rate
+    B_rate_step2 = cal_metric(B_results_step2)  # OOD2-attack refusal rate
+    C_rate = cal_metric(C_results)              # OOD2 refusal rate
+    D_rate = cal_metric(D_results)              # OOD2-attack refusal rate
 
     # --- Save all outputs as JSON arrays ---
     def _dump_json(path, obj):
@@ -376,8 +376,8 @@ def main():
     ap.add_argument("--max_workers", type=int, default=128)
 
     # Twice-OOD
-    ap.add_argument("--ood1_file", type=str, default="/home/ubuntu/leijingdi/safetybench/eval/twice_ood/data/hrhelper_ood1.json", help="File where origin accepted, question refused. Use 'question' as OOD1-attack.")
-    ap.add_argument("--ood2_file", type=str, default="/home/ubuntu/leijingdi/safetybench/eval/twice_ood/data/hrhelper_ood2.json", help="File where both accepted. Use 'origin_question' as OOD2, 'question' as OOD2-attack.")
+    ap.add_argument("--ood1_file", type=str, default="hrhelper_ood1.json", help="File where origin accepted, question refused. Use 'question' as OOD1-attack.")
+    ap.add_argument("--ood2_file", type=str, default="hrhelper_ood2.json", help="All OOD data. Use 'origin_question' as OOD2, 'question' as OOD2-attack.")
     ap.add_argument("--ood1_index", type=int, default=0, help="Pick a single item from ood1_file (default 0)")
 
     args = ap.parse_args()

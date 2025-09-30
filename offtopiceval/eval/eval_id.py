@@ -165,12 +165,7 @@ def main():
 
             all_data = [d for d in dataset if d.get("in_domain_name") == domain_name]
             futures = [executor.submit(worker, data, **kwargs) for data in all_data]
-            for future in tqdm(
-                as_completed(futures),
-                total=len(futures),
-                leave=False,
-                desc=domain_name,
-            ):
+            for future in tqdm(as_completed(futures), total=len(futures), leave=False, desc=domain_name,):
                 try:
                     r = future.result()
                     if r:
@@ -178,24 +173,16 @@ def main():
                         writer.put(r)
 
                 except Exception as e:
-                    logging.warning(
-                        f"[{domain_name}] Worker failed with exception: {e}"
-                    )
+                    logging.warning(f"[{domain_name}] Worker failed with exception: {e}")
 
         # Compute metrics at the end
         writer.graceful_terminate()
 
         refusal_rate = cal_metric([item["eval_result"] for item in result_ls])
-        print(
-            f"[{domain_name}] Saved: {output_path} | Refusal Rate: {refusal_rate:.4f}"
-        )
+        print(f"[{domain_name}] Saved: {output_path} | Refusal Rate: {refusal_rate:.4f}")
 
-        with open(
-            os.path.join(args.output_dir, args.model.split("/")[-1], "summary.txt"), "a", encoding="utf-8"
-        ) as f:
-            f.write(
-                f"{domain_name}\t{refusal_rate:.4f}\n"
-            )
+        with open(os.path.join(args.output_dir, args.model.split("/")[-1], "summary.txt"), "a", encoding="utf-8") as f:
+            f.write(f"{domain_name}\t{refusal_rate:.4f}\n")
 
 if __name__ == "__main__":
     logging.basicConfig(format="%(asctime)s - %(levelname)s - %(message)s")
