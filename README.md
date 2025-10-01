@@ -8,7 +8,7 @@
 
 <p align="center">
   🤗 <a href="https://huggingface.co/datasets/declare-lab/OffTopicEval" target="_blank">Hugging Face</a> &nbsp; | &nbsp;
-  💻 <a href="https://github.com/declare-lab/OffTopicEval" target="_blank">Code</a>
+  💻 <a href="https://github.com/declare-lab/OffTopicEval" target="_blank">Code</a> &nbsp; | &nbsp;
   📄 <a href="https://arxiv.org/abs/2509.26495" target="_blank">Paper</a> 
 </p>
 
