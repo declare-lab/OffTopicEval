@@ -9,6 +9,7 @@
 <p align="center">
   🤗 <a href="https://huggingface.co/datasets/declare-lab/OffTopicEval" target="_blank">Hugging Face</a> &nbsp; | &nbsp;
   💻 <a href="https://github.com/declare-lab/OffTopicEval" target="_blank">Code</a>
+  📄 <a href="https://arxiv.org/abs/2509.26495" target="_blank">Paper</a> 
 </p>
 
 This repo contains the evaluation code and dataset for the paper:
@@ -92,6 +93,19 @@ Data includes:
   * **OS**: Harmonic mean of AR<sub>ID</sub> and RR<sub>OOD</sub>.
 
 
+## Citation
+
+If you find our work useful, please cite:
+
+```bibtex
+@misc{lei2025offtopiceval,
+  title={OffTopicEval: When Large Language Models Enter the Wrong Chat, Almost Always!},
+  author={Jingdi Lei and Varun Gumma and Rishabh Bhardwaj and Seok Min Lim and Chuan Li and Amir Zadeh and Soujanya Poria},
+  year={2025},
+  eprint={2509.26495},
+  archivePrefix={arXiv},
+  primaryClass={cs.AI}
+}
 
 
 
