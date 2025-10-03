@@ -4,7 +4,7 @@
 
 # OffTopicEval
 
-<p align="center"> <img src="resources/title.png" style="width: 95%;" id="title-icon"> </p>
+<p align="center"> <img src="resources/title_v2.png" style="width: 95%;" id="title-icon"> </p>
 
 <p align="center">
   🤗 <a href="https://huggingface.co/datasets/declare-lab/OffTopicEval" target="_blank">Hugging Face</a> &nbsp; | &nbsp;
