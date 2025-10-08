@@ -98,11 +98,10 @@ Data includes:
 If you find our work useful, please cite:
 
 ```bibtex
-@misc{lei2025offtopiceval,
+@article{lei2025offtopiceval,
   title={OffTopicEval: When Large Language Models Enter the Wrong Chat, Almost Always!},
-  author={Jingdi Lei and Varun Gumma and Rishabh Bhardwaj and Seok Min Lim and Chuan Li and Amir Zadeh and Soujanya Poria},
+  author={Lei, Jingdi and Gumma, Varun and Bhardwaj, Rishabh and Lim, Seok Min and Li, Chuan and Zadeh, Amir and Poria, Soujanya},
   year={2025},
-  eprint={2509.26495},
-  archivePrefix={arXiv},
-  primaryClass={cs.AI}
+  journal={arXiv preprint arXiv:2509.26495},
+  url={https://arxiv.org/abs/2509.26495}
 }
