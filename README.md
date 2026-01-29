@@ -2,7 +2,7 @@
 
 ---
 
-# OffTopicEval
+# OffTopicEval (ICLR 2026)
 
 <p align="center"> <img src="resources/title_v2.png" style="width: 95%;" id="title-icon"> </p>
 
